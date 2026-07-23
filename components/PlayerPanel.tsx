@@ -1,8 +1,9 @@
 import RiichiStick from "./RiichiStick";
 import type { Player } from "@/lib/types";
 
-export default function PlayerPanel({ player, rank, position, onRiichi }: {
-  player: Player; rank: number; position: "top" | "bottom" | "left" | "right"; onRiichi: () => void;
+export default function PlayerPanel({ player, rank, position, onRiichi, onEditName }: {
+  player: Player; rank: number; position: "top" | "bottom" | "left" | "right";
+  onRiichi: () => void; onEditName: () => void;
 }) {
   const disabled = player.isRiichi || player.score < 1000;
   return (
@@ -16,6 +17,9 @@ export default function PlayerPanel({ player, rank, position, onRiichi }: {
         </span>
         <span className="rank">{rank}位</span>
         {player.isRiichi && <><span className="riichi-label">リーチ</span><RiichiStick /></>}
+      </button>
+      <button className="name-edit" onClick={onEditName} aria-label={`${player.name}の名前を編集`}>
+        <span aria-hidden="true">✎</span>
       </button>
     </div>
   );

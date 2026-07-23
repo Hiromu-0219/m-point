@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { calculateScore } from "@/lib/scoreCalculator";
-import { createInitialState, snapshotOf } from "@/lib/gameState";
+import { advanceRound, createInitialState, normalizeGameState, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
 import { loadGame, saveGame } from "@/lib/storage";
-import type { GameEvent, GameState, PlayerId, WinType } from "@/lib/types";
+import type { GameEvent, GameMode, GameState, PlayerId, WinType } from "@/lib/types";
 
 const eventId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -14,7 +14,8 @@ export function useGameState() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      setState(loadGame() ?? createInitialState());
+      const saved = loadGame();
+      setState(saved ? normalizeGameState(saved) : createInitialState());
       setHydrated(true);
     });
   }, []);
@@ -53,35 +54,65 @@ export function useGameState() {
           changes.find((c) => c.playerId === winner.id)!.amount += payment;
         });
       }
+      const winPoints = changes.find((c) => c.playerId === winner.id)!.amount;
       const kyotakuPoints = current.kyotaku * 1000;
       changes.find((c) => c.playerId === winner.id)!.amount += kyotakuPoints;
-      const players = current.players.map((player) => ({
+      let players = current.players.map((player) => ({
         ...player, score: player.score + changes.find((c) => c.playerId === player.id)!.amount, isRiichi: false,
       }));
+      const dealerContinues = winner.isDealer;
+      if (!dealerContinues) players = rotatePlayerWinds(players);
+      const nextRound = dealerContinues ? current.round : advanceRound(current.round, current.gameMode);
+      const nextHonba = dealerContinues ? current.honba + 1 : 0;
       const loserName = current.players.find((p) => p.id === params.loserId)?.name;
-      const paymentText = params.winType === "ron" ? `${loserName} → ${winner.name} ${result.total.toLocaleString()}点` : `${winner.name} ツモ ${result.total.toLocaleString()}点`;
+      const paymentText = params.winType === "ron" ? `${loserName} → ${winner.name} ${result.total.toLocaleString()}点` : `${winner.name} ツモ ${winPoints.toLocaleString()}点`;
+      const progressText = dealerContinues ? `／親連荘・${nextHonba}本場` : `／${nextRound}へ`;
       const event: GameEvent = {
-        id: eventId(), type: params.winType, description: `${winner.name} ${params.han}翻${params.fu}符 ${paymentText}${kyotakuPoints ? ` ＋供託${kyotakuPoints.toLocaleString()}点` : ""}`,
+        id: eventId(), type: params.winType, description: `${winner.name} ${params.han}翻${params.fu}符 ${paymentText}${kyotakuPoints ? ` ＋供託${kyotakuPoints.toLocaleString()}点` : ""}${progressText}`,
         changes: changes.filter((change) => change.amount !== 0), kyotakuBefore: current.kyotaku,
         kyotakuAfter: 0, createdAt: Date.now(), snapshot: snapshotOf(current),
       };
-      return { ...current, players, kyotaku: 0, history: [event, ...current.history] };
+      return { ...current, players, kyotaku: 0, honba: nextHonba, round: nextRound, history: [event, ...current.history] };
+    });
+  }, []);
+
+  const renamePlayer = useCallback((playerId: PlayerId, name: string) => {
+    const nextName = name.trim().slice(0, 12);
+    if (!nextName) return;
+    setState((current) => {
+      const player = current.players.find((item) => item.id === playerId);
+      if (!player || player.name === nextName) return current;
+      const snapshot = snapshotOf(current);
+      const event: GameEvent = {
+        id: eventId(),
+        type: "manual",
+        description: `${player.name} の名前を「${nextName}」に変更`,
+        changes: [],
+        kyotakuBefore: current.kyotaku,
+        kyotakuAfter: current.kyotaku,
+        createdAt: Date.now(),
+        snapshot,
+      };
+      return {
+        ...current,
+        players: current.players.map((item) => item.id === playerId ? { ...item, name: nextName } : item),
+        history: [event, ...current.history],
+      };
     });
   }, []);
 
   const undo = useCallback(() => setState((current) => {
     const [latest, ...history] = current.history;
-    return latest ? { ...latest.snapshot, history } : current;
+    return latest ? normalizeGameState({ ...latest.snapshot, history }) : current;
   }), []);
 
-  const reset = useCallback(() => setState((current) => {
-    const initial = createInitialState();
-    const event: GameEvent = {
-      id: eventId(), type: "reset", description: "対局をリセット", changes: [],
-      kyotakuBefore: current.kyotaku, kyotakuAfter: 0, createdAt: Date.now(), snapshot: snapshotOf(current),
-    };
-    return { ...initial, history: [event, ...current.history] };
-  }), []);
+  const startGame = useCallback((gameMode: GameMode, names: string[]) => {
+    setState(createInitialState(gameMode, names, true));
+  }, []);
 
-  return { state, declareRiichi, applyWin, undo, reset, hydrated };
+  const returnToStart = useCallback(() => {
+    setState((current) => ({ ...current, hasStarted: false }));
+  }, []);
+
+  return { state, declareRiichi, applyWin, renamePlayer, undo, startGame, returnToStart, hydrated };
 }

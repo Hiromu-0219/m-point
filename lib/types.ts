@@ -1,6 +1,7 @@
 export type PlayerId = "east" | "south" | "west" | "north";
 export type Wind = "東" | "南" | "西" | "北";
 export type WinType = "ron" | "tsumo";
+export type GameMode = "yonma" | "sanma";
 
 export type Player = {
   id: PlayerId;
@@ -18,6 +19,8 @@ export type GameSnapshot = {
   kyotaku: number;
   honba: number;
   round: string;
+  gameMode: GameMode;
+  hasStarted: boolean;
 };
 
 export type GameEvent = {

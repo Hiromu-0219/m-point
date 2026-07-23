@@ -49,6 +49,14 @@ button { touch-action: manipulation; }
   transition: .2s ease; cursor: pointer;
 }
 .player-inner:active { transform: scale(.985); }
+.name-edit {
+  position: absolute; z-index: 3; left: calc(50% + min(17vw, 184px)); top: 11px;
+  width: clamp(28px, 3.8vw, 38px); height: clamp(28px, 3.8vw, 38px);
+  display: grid; place-items: center; border: 1px solid rgba(255,255,255,.18); border-radius: 50%;
+  color: #d6e2dc; background: #183a2e; font-size: clamp(13px,1.8vw,18px); cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,.22);
+}
+.name-edit:active { transform: scale(.92); }
 .player-inner.riichi {
   border-color: #ff776b; background: linear-gradient(145deg, #511b19, #28100f);
   box-shadow: 0 0 22px rgba(233,86,74,.42), inset 0 1px rgba(255,255,255,.08);
@@ -114,7 +122,15 @@ button { touch-action: manipulation; }
 .chip:disabled { opacity: .3; cursor: not-allowed; }
 .select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 select { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #315446; border-radius: 11px; color: white; background: #102a21; }
+.name-modal { width: min(92vw, 440px); }
+.name-input {
+  width: 100%; min-height: 54px; padding: 0 15px; border: 1px solid #456e5d; border-radius: 12px;
+  outline: none; color: white; background: #102a21; font-size: 20px; font-weight: 800;
+}
+.name-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(220,192,113,.15); }
+.confirm:disabled { opacity: .38; cursor: not-allowed; }
 .warning { color: #ff8e85; font-size: 13px; }
+.sanma-note { margin-top: 8px; color: #9fb6ab; font-size: 11px; font-weight: 700; }
 .result-card { margin-top: 16px; padding: 16px; border: 1px solid rgba(220,192,113,.36); border-radius: 14px; background: #0d251d; text-align: center; }
 .result-title { color: var(--gold); font-weight: 900; }
 .result-lines { margin: 10px 0; color: #d6e0db; line-height: 1.7; white-space: pre-line; }
@@ -128,6 +144,45 @@ select { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #3154
 .history-item p { margin: 0; font-weight: 700; }
 .history-item time { color: #88a096; font-size: 11px; }
 .empty { padding: 36px; color: #82968d; text-align: center; }
+
+.start-screen {
+  width: 100vw; min-height: 100dvh; overflow: auto; display: grid; place-items: center; padding: 24px;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(69,145,105,.27), transparent 34%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,.012) 0 1px, transparent 1px 6px),
+    #061a14;
+}
+.start-card {
+  width: min(92vw, 620px); padding: clamp(24px,5vw,44px); border: 1px solid rgba(220,192,113,.34);
+  border-radius: 28px; background: rgba(5,24,18,.93); box-shadow: 0 32px 100px rgba(0,0,0,.42); text-align: center;
+}
+.start-brand { color: var(--gold); font-size: 12px; font-weight: 900; letter-spacing: .4em; }
+.start-card h1 { margin: 6px 0 2px; font-family: serif; font-size: clamp(30px,6vw,48px); }
+.start-lead { margin: 0 0 25px; color: #9eb2a8; }
+.mode-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mode-picker button {
+  min-height: 82px; display: grid; place-content: center; gap: 4px; border: 1px solid #315245; border-radius: 15px;
+  color: #dce6e1; background: #0c2a20; cursor: pointer;
+}
+.mode-picker button.active { color: #14170f; border-color: var(--gold); background: var(--gold); box-shadow: 0 4px 0 #806c35; }
+.mode-picker strong { font-size: 18px; }
+.mode-picker span { font-size: 11px; opacity: .76; }
+.start-names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 24px 0 18px; text-align: left; }
+.start-names label span { display: block; margin: 0 0 5px 5px; color: #93a99e; font-size: 11px; font-weight: 800; }
+.start-names input {
+  width: 100%; min-height: 48px; padding: 0 13px; border: 1px solid #315446; border-radius: 11px;
+  outline: none; color: white; background: #102a21; font-size: 16px; font-weight: 800;
+}
+.start-names input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(220,192,113,.14); }
+.start-button {
+  width: 100%; min-height: 56px; border: 0; border-radius: 14px; color: #11160e; background: var(--gold);
+  font-size: 17px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #806c35;
+}
+.start-button:disabled { opacity: .35; cursor: not-allowed; }
+.start-foot { margin: 14px 0 0; color: #71887d; font-size: 10px; }
+
+.mode-sanma .position-left { left: 5%; }
+.mode-sanma .position-right { right: 5%; }
 
 @media (max-aspect-ratio: 1/1) {
   .table-shell::before { content: "端末を横向きにすると、より見やすく使えます"; position: absolute; z-index: 15; top: 8px; left: 50%; transform: translateX(-50%); padding: 5px 12px; border-radius: 99px; color: #102017; background: var(--gold); font-size: 10px; font-weight: 800; white-space: nowrap; }

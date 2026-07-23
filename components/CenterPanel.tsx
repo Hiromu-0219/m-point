@@ -11,7 +11,7 @@ export default function CenterPanel({ round, honba, kyotaku, canUndo, onTransfer
       <div className="utility-row">
         <button onClick={onHistory}>履歴</button>
         <button onClick={onUndo} disabled={!canUndo}>1手戻す</button>
-        <button onClick={onReset}>リセット</button>
+        <button onClick={onReset}>新規対局</button>
       </div>
     </section>
   );
