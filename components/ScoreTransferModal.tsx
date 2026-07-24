@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { calculateScore, isValidHanFu, VALID_FU } from "@/lib/scoreCalculator";
+import { calculateHonbaBonus, calculateScore, isValidHanFu, VALID_FU } from "@/lib/scoreCalculator";
 import type { GameMode, Player, PlayerId, WinType } from "@/lib/types";
 
-export default function ScoreTransferModal({ players, kyotaku, gameMode, onConfirm, onClose }: {
-  players: Player[]; kyotaku: number; gameMode: GameMode;
+export default function ScoreTransferModal({ players, kyotaku, honba, gameMode, onConfirm, onClose }: {
+  players: Player[]; kyotaku: number; honba: number; gameMode: GameMode;
   onConfirm: (value: { winType: WinType; winnerId: PlayerId; loserId?: PlayerId; han: number; fu: number }) => void;
   onClose: () => void;
 }) {
@@ -22,14 +22,16 @@ export default function ScoreTransferModal({ players, kyotaku, gameMode, onConfi
       ? result.childPayment * (players.length - 1)
       : (result.dealerPayment ?? 0) + result.childPayment * (players.length - 2)
     : result?.total ?? 0;
+  const honbaBonus = calculateHonbaBonus(honba, winType, players.length - 1);
+  const paymentTotal = tsumoTotal + honbaBonus.total;
 
   const selectWinType = (value: WinType) => { setWinType(value); if (value === "tsumo") setLoserId(undefined); else setLoserId(players.find((p) => p.id !== winnerId)?.id); };
   const selectWinner = (id: PlayerId) => { setWinnerId(id); if (winType === "ron" && loserId === id) setLoserId(players.find((p) => p.id !== id)?.id); };
   const lines = result?.winType === "ron"
-    ? `${players.find((p) => p.id === loserId)?.name} → ${winner.name}\n${result.total.toLocaleString()}点`
+    ? `${players.find((p) => p.id === loserId)?.name} → ${winner.name}\n${(result.total + honbaBonus.total).toLocaleString()}点`
     : winner.isDealer
-      ? `3人から各 ${result?.childPayment.toLocaleString()}点`
-      : `親 ${result?.dealerPayment?.toLocaleString()}点／子 各${result?.childPayment.toLocaleString()}点`;
+      ? `${players.length - 1}人から各 ${((result?.childPayment ?? 0) + honbaBonus.perPayer).toLocaleString()}点`
+      : `親 ${((result?.dealerPayment ?? 0) + honbaBonus.perPayer).toLocaleString()}点／子 各${((result?.childPayment ?? 0) + honbaBonus.perPayer).toLocaleString()}点`;
 
   return (
     <div className="overlay" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
@@ -56,8 +58,9 @@ export default function ScoreTransferModal({ players, kyotaku, gameMode, onConfi
         {result && <div className="result-card">
           <div className="result-title">{winner.name} {han}翻{fu}符 {winType === "ron" ? "ロン" : "ツモ"} {result.limitName && `・${result.limitName}`}</div>
           <div className="result-lines">{lines}{kyotaku ? `\n供託 ＋${(kyotaku * 1000).toLocaleString()}点` : ""}</div>
+          {honba > 0 && <div className="honba-note">{honba}本場 ＋{honbaBonus.total.toLocaleString()}点</div>}
           {gameMode === "sanma" && winType === "tsumo" && <div className="sanma-note">三麻・ツモ損あり</div>}
-          <div className="result-total">獲得合計 {(tsumoTotal + kyotaku * 1000).toLocaleString()}点</div>
+          <div className="result-total">獲得合計 {(paymentTotal + kyotaku * 1000).toLocaleString()}点</div>
           <button className="confirm" onClick={() => { onConfirm({ winType, winnerId, loserId, han, fu }); onClose(); }}>この内容で確定</button>
         </div>}
       </section>

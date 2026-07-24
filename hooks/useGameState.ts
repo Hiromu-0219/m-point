@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { calculateScore } from "@/lib/scoreCalculator";
+import { calculateHonbaBonus, calculateScore } from "@/lib/scoreCalculator";
 import { advanceRound, calculateDrawChanges, createInitialState, createMatchRecord, normalizeGameState, normalizeManualScore, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
 import { loadGame, saveGame } from "@/lib/storage";
 import type { GameEvent, GameMode, GameState, PlayerId, WinType } from "@/lib/types";
@@ -45,11 +45,14 @@ export function useGameState() {
       if (result.winType === "ron") {
         const loser = current.players.find((p) => p.id === params.loserId);
         if (!loser || loser.id === winner.id) return current;
-        changes.find((c) => c.playerId === loser.id)!.amount -= result.total;
-        changes.find((c) => c.playerId === winner.id)!.amount += result.total;
+        const payment = result.total + calculateHonbaBonus(current.honba, "ron", 1).total;
+        changes.find((c) => c.playerId === loser.id)!.amount -= payment;
+        changes.find((c) => c.playerId === winner.id)!.amount += payment;
       } else {
+        const honbaPerPayer = calculateHonbaBonus(current.honba, "tsumo", current.players.length - 1).perPayer;
         current.players.filter((p) => p.id !== winner.id).forEach((payer) => {
-          const payment = winner.isDealer ? result.childPayment : payer.isDealer ? result.dealerPayment! : result.childPayment;
+          const basePayment = winner.isDealer ? result.childPayment : payer.isDealer ? result.dealerPayment! : result.childPayment;
+          const payment = basePayment + honbaPerPayer;
           changes.find((c) => c.playerId === payer.id)!.amount -= payment;
           changes.find((c) => c.playerId === winner.id)!.amount += payment;
         });
@@ -65,7 +68,8 @@ export function useGameState() {
       const nextRound = dealerContinues ? current.round : advanceRound(current.round, current.gameMode);
       const nextHonba = dealerContinues ? current.honba + 1 : 0;
       const loserName = current.players.find((p) => p.id === params.loserId)?.name;
-      const paymentText = params.winType === "ron" ? `${loserName} → ${winner.name} ${result.total.toLocaleString()}点` : `${winner.name} ツモ ${winPoints.toLocaleString()}点`;
+      const honbaText = current.honba > 0 ? `（${current.honba}本場込み）` : "";
+      const paymentText = params.winType === "ron" ? `${loserName} → ${winner.name} ${winPoints.toLocaleString()}点${honbaText}` : `${winner.name} ツモ ${winPoints.toLocaleString()}点${honbaText}`;
       const progressText = dealerContinues ? `／親連荘・${nextHonba}本場` : `／${nextRound}へ`;
       const event: GameEvent = {
         id: eventId(), type: params.winType, description: `${winner.name} ${params.han}翻${params.fu}符 ${paymentText}${kyotakuPoints ? ` ＋供託${kyotakuPoints.toLocaleString()}点` : ""}${progressText}`,

@@ -37,7 +37,7 @@ export default function MahjongTable() {
         layoutMode={layoutMode} onTransfer={() => setTransferOpen(true)} onDraw={() => setDrawOpen(true)}
         onHistory={() => setHistoryOpen(true)} onUndo={undo} onReset={() => setResetOpen(true)}
         onToggleLayout={() => setLayoutMode((current) => current === "table" ? "list" : "table")} />
-      {transferOpen && <ScoreTransferModal players={state.players} kyotaku={state.kyotaku} gameMode={state.gameMode} onConfirm={applyWin} onClose={() => setTransferOpen(false)} />}
+      {transferOpen && <ScoreTransferModal players={state.players} kyotaku={state.kyotaku} honba={state.honba} gameMode={state.gameMode} onConfirm={applyWin} onClose={() => setTransferOpen(false)} />}
       {drawOpen && <DrawModal players={state.players} honba={state.honba} onConfirm={applyDraw} onClose={() => setDrawOpen(false)} />}
       {historyOpen && <HistoryModal history={state.history} matchHistory={state.matchHistory} onClose={() => setHistoryOpen(false)} />}
       {editingPlayerId && <PlayerNameModal

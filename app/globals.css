@@ -138,6 +138,7 @@ select { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #3154
 .confirm:disabled { opacity: .38; cursor: not-allowed; }
 .warning { color: #ff8e85; font-size: 13px; }
 .sanma-note { margin-top: 8px; color: #9fb6ab; font-size: 11px; font-weight: 700; }
+.honba-note { margin: 6px 0; color: var(--gold); font-size: 12px; font-weight: 900; }
 .result-card { margin-top: 16px; padding: 16px; border: 1px solid rgba(220,192,113,.36); border-radius: 14px; background: #0d251d; text-align: center; }
 .result-title { color: var(--gold); font-weight: 900; }
 .result-lines { margin: 10px 0; color: #d6e0db; line-height: 1.7; white-space: pre-line; }

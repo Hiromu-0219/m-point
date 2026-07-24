@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { calculateScore } from "../lib/scoreCalculator.ts";
+import { calculateHonbaBonus, calculateScore } from "../lib/scoreCalculator.ts";
 
 const ron = (han: number, fu: number, isDealer = false) => calculateScore({ han, fu, winType: "ron", isDealer });
 test("通常ロンの点数", () => {
@@ -27,4 +27,11 @@ test("満貫ツモ", () => {
   assert.equal(child.winType, "tsumo");
   if (child.winType === "tsumo") { assert.equal(child.dealerPayment, 4000); assert.equal(child.childPayment, 2000); }
   if (dealer.winType === "tsumo") assert.equal(dealer.childPayment, 4000);
+});
+
+test("本場の加算", () => {
+  assert.deepEqual(calculateHonbaBonus(1, "ron", 1), { perPayer: 300, total: 300 });
+  assert.deepEqual(calculateHonbaBonus(2, "ron", 1), { perPayer: 600, total: 600 });
+  assert.deepEqual(calculateHonbaBonus(1, "tsumo", 3), { perPayer: 100, total: 300 });
+  assert.deepEqual(calculateHonbaBonus(1, "tsumo", 2), { perPayer: 100, total: 200 });
 });

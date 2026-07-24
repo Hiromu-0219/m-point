@@ -14,6 +14,13 @@ export type CalculateScoreResult =
 export const VALID_FU = [20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110] as const;
 export const roundUp100 = (value: number) => Math.ceil(value / 100) * 100;
 
+export function calculateHonbaBonus(honba: number, winType: WinType, payerCount: number) {
+  const safeHonba = Number.isInteger(honba) && honba > 0 ? honba : 0;
+  if (winType === "ron") return { perPayer: safeHonba * 300, total: safeHonba * 300 };
+  const perPayer = safeHonba * 100;
+  return { perPayer, total: perPayer * Math.max(0, payerCount) };
+}
+
 export function isValidHanFu(han: number, fu: number) {
   return Number.isInteger(han) && han >= 1 && han <= 13 && VALID_FU.includes(fu as (typeof VALID_FU)[number])
     && !(han === 1 && (fu === 20 || fu === 25));
