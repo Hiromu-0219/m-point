@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { calculateHonbaBonus, calculateScore } from "@/lib/scoreCalculator";
-import { advanceRound, calculateDrawChanges, createInitialState, createMatchRecord, normalizeGameState, normalizeManualScore, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
+import { advanceRound, calculateDrawChanges, calculateDrawRiichiAdjustments, createInitialState, createMatchRecord, normalizeGameState, normalizeManualScore, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
 import { loadGame, saveGame } from "@/lib/storage";
 import type { GameEvent, GameMode, GameState, PlayerId, WinType } from "@/lib/types";
 
@@ -112,11 +112,17 @@ export function useGameState() {
     });
   }, []);
 
-  const applyDraw = useCallback((tenpaiIds: PlayerId[]) => {
+  const applyDraw = useCallback((tenpaiIds: PlayerId[], riichiIds: PlayerId[]) => {
     setState((current) => {
       const tenpai = new Set(tenpaiIds);
       const tenpaiPlayers = current.players.filter((player) => tenpai.has(player.id));
-      const { changes, dealerContinues } = calculateDrawChanges(current.players, tenpaiIds);
+      const drawResult = calculateDrawChanges(current.players, tenpaiIds);
+      const riichiResult = calculateDrawRiichiAdjustments(current.players, riichiIds);
+      const changes = drawResult.changes.map((change) => ({
+        ...change,
+        amount: change.amount + (riichiResult.changes.find((item) => item.playerId === change.playerId)?.amount ?? 0),
+      }));
+      const dealerContinues = drawResult.dealerContinues;
       let players = current.players.map((player) => ({
         ...player,
         score: player.score + changes.find((change) => change.playerId === player.id)!.amount,
@@ -125,18 +131,23 @@ export function useGameState() {
       if (!dealerContinues) players = rotatePlayerWinds(players);
       const nextRound = dealerContinues ? current.round : advanceRound(current.round, current.gameMode);
       const nextHonba = current.honba + 1;
+      const nextKyotaku = current.kyotaku + riichiResult.additionalKyotaku;
       const tenpaiNames = tenpaiPlayers.map((player) => player.name).join("・") || "なし";
+      const drawRiichiNames = current.players
+        .filter((player) => riichiIds.includes(player.id))
+        .map((player) => player.name)
+        .join("・");
       const event: GameEvent = {
         id: eventId(),
         type: "draw",
-        description: `流局／テンパイ：${tenpaiNames}／${dealerContinues ? "親連荘" : `${nextRound}へ`}／${nextHonba}本場`,
+        description: `流局／テンパイ：${tenpaiNames}${drawRiichiNames ? `／リーチ：${drawRiichiNames}` : ""}／供託${nextKyotaku}本／${dealerContinues ? "親連荘" : `${nextRound}へ`}／${nextHonba}本場`,
         changes: changes.filter((change) => change.amount !== 0),
         kyotakuBefore: current.kyotaku,
-        kyotakuAfter: current.kyotaku,
+        kyotakuAfter: nextKyotaku,
         createdAt: Date.now(),
         snapshot: snapshotOf(current),
       };
-      return { ...current, players, honba: nextHonba, round: nextRound, history: [event, ...current.history] };
+      return { ...current, players, kyotaku: nextKyotaku, honba: nextHonba, round: nextRound, history: [event, ...current.history] };
     });
   }, []);
 

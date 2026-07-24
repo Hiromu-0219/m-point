@@ -124,6 +124,7 @@ button { touch-action: manipulation; }
   font-weight: 800; cursor: pointer;
 }
 .chip.selected { color: #16180f; border-color: var(--gold); background: var(--gold); }
+.riichi-chip.selected { color: white; border-color: #ff776b; background: #7b2521; }
 .chip:disabled { opacity: .3; cursor: not-allowed; }
 .select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 select { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #315446; border-radius: 11px; color: white; background: #102a21; }

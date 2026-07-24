@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { advanceRound, calculateDrawChanges, createInitialState, createMatchRecord, INITIAL_PLAYERS, normalizeManualScore, rotatePlayerWinds } from "../lib/gameState.ts";
+import { advanceRound, calculateDrawChanges, calculateDrawRiichiAdjustments, createInitialState, createMatchRecord, INITIAL_PLAYERS, normalizeManualScore, rotatePlayerWinds } from "../lib/gameState.ts";
 
 test("局を東一局から南四局まで進める", () => {
   assert.equal(advanceRound("東一局"), "東二局");
@@ -51,4 +51,15 @@ test("手動点数を100点単位へ正規化する", () => {
   assert.equal(normalizeManualScore(25150), 25200);
   assert.equal(normalizeManualScore(-100), null);
   assert.equal(normalizeManualScore(Number.NaN), null);
+});
+
+test("流局時の未処理リーチだけ1000点を供託する", () => {
+  const players = INITIAL_PLAYERS.map((player, index) => ({
+    ...player,
+    isRiichi: index === 0,
+    score: index === 2 ? 900 : player.score,
+  }));
+  const result = calculateDrawRiichiAdjustments(players, ["east", "south", "west"]);
+  assert.deepEqual(result.changes.map((change) => change.amount), [0, -1000, 0, 0]);
+  assert.equal(result.additionalKyotaku, 1);
 });

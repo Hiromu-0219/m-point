@@ -96,6 +96,22 @@ export function calculateDrawChanges(players: Player[], tenpaiIds: PlayerId[]): 
   return { changes, dealerContinues: !!dealer && tenpai.has(dealer.id) };
 }
 
+export function calculateDrawRiichiAdjustments(players: Player[], riichiIds: PlayerId[]): {
+  changes: ScoreChange[];
+  additionalKyotaku: number;
+} {
+  const requested = new Set(riichiIds);
+  const newlyDeclared = players.filter((player) =>
+    requested.has(player.id) && !player.isRiichi && player.score >= 1000);
+  return {
+    changes: players.map((player) => ({
+      playerId: player.id,
+      amount: newlyDeclared.some((declared) => declared.id === player.id) ? -1000 : 0,
+    })),
+    additionalKyotaku: newlyDeclared.length,
+  };
+}
+
 export function normalizeManualScore(value: number): number | null {
   if (!Number.isFinite(value) || value < 0 || value > 999900) return null;
   return Math.round(value / 100) * 100;
