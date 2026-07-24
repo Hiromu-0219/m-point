@@ -128,10 +128,12 @@ button { touch-action: manipulation; }
 .select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 select { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #315446; border-radius: 11px; color: white; background: #102a21; }
 .name-modal { width: min(92vw, 440px); }
+.edit-fields { display: grid; gap: 4px; }
 .name-input {
   width: 100%; min-height: 54px; padding: 0 15px; border: 1px solid #456e5d; border-radius: 12px;
   outline: none; color: white; background: #102a21; font-size: 20px; font-weight: 800;
 }
+.score-input { font-family: ui-monospace, monospace; letter-spacing: .02em; }
 .name-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(220,192,113,.15); }
 .confirm:disabled { opacity: .38; cursor: not-allowed; }
 .warning { color: #ff8e85; font-size: 13px; }

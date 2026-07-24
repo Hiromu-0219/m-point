@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { calculateScore } from "@/lib/scoreCalculator";
-import { advanceRound, calculateDrawChanges, createInitialState, createMatchRecord, normalizeGameState, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
+import { advanceRound, calculateDrawChanges, createInitialState, createMatchRecord, normalizeGameState, normalizeManualScore, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
 import { loadGame, saveGame } from "@/lib/storage";
 import type { GameEvent, GameMode, GameState, PlayerId, WinType } from "@/lib/types";
 
@@ -76,18 +76,25 @@ export function useGameState() {
     });
   }, []);
 
-  const renamePlayer = useCallback((playerId: PlayerId, name: string) => {
+  const editPlayer = useCallback((playerId: PlayerId, name: string, score: number) => {
     const nextName = name.trim().slice(0, 12);
-    if (!nextName) return;
+    const nextScore = normalizeManualScore(score);
+    if (!nextName || nextScore === null) return;
     setState((current) => {
       const player = current.players.find((item) => item.id === playerId);
-      if (!player || player.name === nextName) return current;
+      if (!player || (player.name === nextName && player.score === nextScore)) return current;
       const snapshot = snapshotOf(current);
+      const scoreChange = nextScore - player.score;
+      const changes = scoreChange === 0 ? [] : [{ playerId, amount: scoreChange }];
+      const descriptions = [
+        player.name !== nextName ? `名前を「${nextName}」に変更` : "",
+        scoreChange !== 0 ? `点数を${player.score.toLocaleString()}点から${nextScore.toLocaleString()}点へ変更` : "",
+      ].filter(Boolean);
       const event: GameEvent = {
         id: eventId(),
         type: "manual",
-        description: `${player.name} の名前を「${nextName}」に変更`,
-        changes: [],
+        description: `${player.name}：${descriptions.join("・")}`,
+        changes,
         kyotakuBefore: current.kyotaku,
         kyotakuAfter: current.kyotaku,
         createdAt: Date.now(),
@@ -95,7 +102,7 @@ export function useGameState() {
       };
       return {
         ...current,
-        players: current.players.map((item) => item.id === playerId ? { ...item, name: nextName } : item),
+        players: current.players.map((item) => item.id === playerId ? { ...item, name: nextName, score: nextScore } : item),
         history: [event, ...current.history],
       };
     });
@@ -149,5 +156,5 @@ export function useGameState() {
     } : current);
   }, []);
 
-  return { state, declareRiichi, applyWin, applyDraw, renamePlayer, undo, startGame, returnToStart, hydrated };
+  return { state, declareRiichi, applyWin, applyDraw, editPlayer, undo, startGame, returnToStart, hydrated };
 }

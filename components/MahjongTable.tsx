@@ -16,7 +16,7 @@ import DrawModal from "./DrawModal";
 const positions: Record<PlayerId, "top" | "bottom" | "left" | "right"> = { east: "bottom", south: "right", west: "top", north: "left" };
 
 export default function MahjongTable() {
-  const { state, declareRiichi, applyWin, applyDraw, renamePlayer, undo, startGame, returnToStart, hydrated } = useGameState();
+  const { state, declareRiichi, applyWin, applyDraw, editPlayer, undo, startGame, returnToStart, hydrated } = useGameState();
   const [transferOpen, setTransferOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
@@ -43,7 +43,7 @@ export default function MahjongTable() {
       {editingPlayerId && <PlayerNameModal
         player={state.players.find((player) => player.id === editingPlayerId)!}
         onClose={() => setEditingPlayerId(null)}
-        onSave={(name) => { renamePlayer(editingPlayerId, name); setEditingPlayerId(null); }}
+        onSave={(name, score) => { editPlayer(editingPlayerId, name, score); setEditingPlayerId(null); }}
       />}
       {resetOpen && <ConfirmDialog title="現在の対局を保存しますか？" message="最終順位と点数を対戦履歴へ保存し、人数と名前を選ぶスタート画面へ戻ります。"
         confirmLabel="保存して終了" onCancel={() => setResetOpen(false)} onConfirm={() => { returnToStart(); setResetOpen(false); }} />}

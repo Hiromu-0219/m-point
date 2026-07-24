@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { advanceRound, calculateDrawChanges, createInitialState, createMatchRecord, INITIAL_PLAYERS, rotatePlayerWinds } from "../lib/gameState.ts";
+import { advanceRound, calculateDrawChanges, createInitialState, createMatchRecord, INITIAL_PLAYERS, normalizeManualScore, rotatePlayerWinds } from "../lib/gameState.ts";
 
 test("局を東一局から南四局まで進める", () => {
   assert.equal(advanceRound("東一局"), "東二局");
@@ -44,4 +44,11 @@ test("三麻の親ノーテン流局を計算する", () => {
   const result = calculateDrawChanges(INITIAL_PLAYERS.slice(0, 3), ["south"]);
   assert.deepEqual(result.changes.map((change) => change.amount), [-1500, 3000, -1500]);
   assert.equal(result.dealerContinues, false);
+});
+
+test("手動点数を100点単位へ正規化する", () => {
+  assert.equal(normalizeManualScore(25149), 25100);
+  assert.equal(normalizeManualScore(25150), 25200);
+  assert.equal(normalizeManualScore(-100), null);
+  assert.equal(normalizeManualScore(Number.NaN), null);
 });

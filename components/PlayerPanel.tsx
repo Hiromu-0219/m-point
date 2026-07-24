@@ -18,7 +18,7 @@ export default function PlayerPanel({ player, rank, position, onRiichi, onEditNa
         <span className="rank">{rank}位</span>
         {player.isRiichi && <><span className="riichi-label">リーチ</span><RiichiStick /></>}
       </button>
-      <button className="name-edit" onClick={onEditName} aria-label={`${player.name}の名前を編集`}>
+      <button className="name-edit" onClick={onEditName} aria-label={`${player.name}の名前と点数を編集`}>
         <span aria-hidden="true">✎</span>
       </button>
     </div>

@@ -95,3 +95,8 @@ export function calculateDrawChanges(players: Player[], tenpaiIds: PlayerId[]): 
   const dealer = players.find((player) => player.isDealer);
   return { changes, dealerContinues: !!dealer && tenpai.has(dealer.id) };
 }
+
+export function normalizeManualScore(value: number): number | null {
+  if (!Number.isFinite(value) || value < 0 || value > 999900) return null;
+  return Math.round(value / 100) * 100;
+}
