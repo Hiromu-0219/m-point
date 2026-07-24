@@ -185,11 +185,46 @@ select { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #3154
 .mode-sanma .position-right { right: 5%; }
 
 @media (max-aspect-ratio: 1/1) {
-  .table-shell::before { content: "端末を横向きにすると、より見やすく使えます"; position: absolute; z-index: 15; top: 8px; left: 50%; transform: translateX(-50%); padding: 5px 12px; border-radius: 99px; color: #102017; background: var(--gold); font-size: 10px; font-weight: 800; white-space: nowrap; }
-  .player-inner { width: 46vw; height: 17vh; }
-  .position-left { transform: translate(-36%, -50%) rotate(90deg); }
-  .position-right { transform: translate(36%, -50%) rotate(-90deg); }
-  .center-panel { width: 39vw; }
+  .table-shell::after { inset: 7px; border-radius: 20px; }
+  .player-inner {
+    width: min(72vw, 560px);
+    height: min(18vh, 170px);
+    min-height: 112px;
+    padding: clamp(12px, 2.4vw, 22px);
+  }
+  .position-top { top: 4%; }
+  .position-bottom { bottom: 4%; }
+  .position-left { left: 1.5%; transform: translate(-39%, -50%) rotate(90deg); }
+  .position-right { right: 1.5%; transform: translate(39%, -50%) rotate(-90deg); }
+  .wind-tile { width: clamp(48px, 8vw, 68px); font-size: clamp(25px, 5vw, 38px); }
+  .player-name { font-size: clamp(14px, 2.7vw, 20px); }
+  .score { font-size: clamp(42px, 10vw, 78px); }
+  .rank { font-size: clamp(16px, 3vw, 24px); }
+  .center-panel { width: min(48vw, 350px); padding: clamp(14px, 2.8vw, 22px); }
+  .round { font-size: clamp(24px, 5vw, 36px); }
+  .counters { font-size: clamp(12px, 2.2vw, 16px); }
+  .main-action { min-height: 54px; font-size: clamp(15px, 2.8vw, 19px); }
+  .utility-row button { min-height: 42px; font-size: clamp(10px, 1.8vw, 14px); }
+  .name-edit {
+    left: calc(50% + min(29vw, 224px));
+    top: 14px;
+    width: clamp(34px, 5vw, 44px);
+    height: clamp(34px, 5vw, 44px);
+  }
+  .mode-sanma .position-left { left: 2%; }
+  .mode-sanma .position-right { right: 2%; }
+}
+
+@media (max-width: 520px) and (max-aspect-ratio: 1/1) {
+  .player-inner { width: 68vw; height: 17vh; min-height: 94px; }
+  .position-top { top: 2.5%; }
+  .position-bottom { bottom: 2.5%; }
+  .position-left { transform: translate(-41%, -50%) rotate(90deg); }
+  .position-right { transform: translate(41%, -50%) rotate(-90deg); }
+  .center-panel { width: 49vw; padding: 11px; }
+  .score { font-size: clamp(34px, 9vw, 48px); }
+  .wind-tile { width: 42px; font-size: 22px; }
+  .name-edit { left: calc(50% + 26vw); top: 10px; }
 }
 
 @media (max-height: 480px) {
