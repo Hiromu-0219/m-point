@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { GameMode } from "@/lib/types";
+import type { GameMode, MatchRecord } from "@/lib/types";
 
-export default function StartScreen({ onStart }: { onStart: (mode: GameMode, names: string[]) => void }) {
+export default function StartScreen({ onStart, matchHistory = [] }: {
+  onStart: (mode: GameMode, names: string[]) => void;
+  matchHistory?: MatchRecord[];
+}) {
   const [mode, setMode] = useState<GameMode>("yonma");
   const count = mode === "sanma" ? 3 : 4;
   const [names, setNames] = useState(["プレイヤー1", "プレイヤー2", "プレイヤー3", "プレイヤー4"]);
@@ -40,6 +43,11 @@ export default function StartScreen({ onStart }: { onStart: (mode: GameMode, nam
           {mode === "sanma" ? "三麻を始める" : "四麻を始める"}
         </button>
         <p className="start-foot">名前と対局状況はこの端末だけに保存されます</p>
+        {matchHistory.length > 0 && <div className="start-history-summary">
+          <strong>保存済みの対戦</strong>
+          <span>{matchHistory.length}局</span>
+          <small>最新：{new Date(matchHistory[0].endedAt).toLocaleDateString("ja-JP")}</small>
+        </div>}
       </section>
     </main>
   );

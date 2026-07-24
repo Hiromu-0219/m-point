@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { calculateScore } from "@/lib/scoreCalculator";
-import { advanceRound, createInitialState, normalizeGameState, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
+import { advanceRound, createInitialState, createMatchRecord, normalizeGameState, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
 import { loadGame, saveGame } from "@/lib/storage";
 import type { GameEvent, GameMode, GameState, PlayerId, WinType } from "@/lib/types";
 
@@ -103,15 +103,22 @@ export function useGameState() {
 
   const undo = useCallback(() => setState((current) => {
     const [latest, ...history] = current.history;
-    return latest ? normalizeGameState({ ...latest.snapshot, history }) : current;
+    return latest ? normalizeGameState({ ...latest.snapshot, history, matchHistory: current.matchHistory }) : current;
   }), []);
 
   const startGame = useCallback((gameMode: GameMode, names: string[]) => {
-    setState(createInitialState(gameMode, names, true));
+    setState((current) => ({
+      ...createInitialState(gameMode, names, true),
+      matchHistory: current.matchHistory,
+    }));
   }, []);
 
   const returnToStart = useCallback(() => {
-    setState((current) => ({ ...current, hasStarted: false }));
+    setState((current) => current.hasStarted ? {
+      ...current,
+      hasStarted: false,
+      matchHistory: [createMatchRecord(current), ...current.matchHistory].slice(0, 100),
+    } : current);
   }, []);
 
   return { state, declareRiichi, applyWin, renamePlayer, undo, startGame, returnToStart, hydrated };

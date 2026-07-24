@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { advanceRound, INITIAL_PLAYERS, rotatePlayerWinds } from "../lib/gameState.ts";
+import { advanceRound, createInitialState, createMatchRecord, INITIAL_PLAYERS, rotatePlayerWinds } from "../lib/gameState.ts";
 
 test("局を東一局から南四局まで進める", () => {
   assert.equal(advanceRound("東一局"), "東二局");
@@ -23,4 +23,13 @@ test("三麻は北家なしで東三局から南場へ進む", () => {
   assert.deepEqual(sanma.map((player) => player.wind), ["西", "東", "南"]);
   assert.equal(advanceRound("東三局", "sanma"), "南一局");
   assert.equal(advanceRound("南三局", "sanma"), "対局終了");
+});
+
+test("最終順位付きの対戦履歴を作成する", () => {
+  const state = createInitialState("sanma", ["A", "B", "C"], true);
+  state.players[1].score = 42000;
+  const record = createMatchRecord(state, 1234);
+  assert.equal(record.gameMode, "sanma");
+  assert.equal(record.endedAt, 1234);
+  assert.deepEqual(record.players.map((player) => player.name), ["B", "A", "C"]);
 });

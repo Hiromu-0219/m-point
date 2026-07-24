@@ -22,7 +22,7 @@ export default function MahjongTable() {
   const [editingPlayerId, setEditingPlayerId] = useState<PlayerId | null>(null);
   const ranks = useMemo(() => getRanks(state.players), [state.players]);
   if (!hydrated) return <main className="table-shell" />;
-  if (!state.hasStarted) return <StartScreen onStart={startGame} />;
+  if (!state.hasStarted) return <StartScreen onStart={startGame} matchHistory={state.matchHistory} />;
   return (
     <main className={`table-shell mode-${state.gameMode}`}>
       {state.players.map((player) => {
@@ -33,14 +33,14 @@ export default function MahjongTable() {
       <CenterPanel round={state.round} honba={state.honba} kyotaku={state.kyotaku} canUndo={state.history.length > 0}
         onTransfer={() => setTransferOpen(true)} onHistory={() => setHistoryOpen(true)} onUndo={undo} onReset={() => setResetOpen(true)} />
       {transferOpen && <ScoreTransferModal players={state.players} kyotaku={state.kyotaku} gameMode={state.gameMode} onConfirm={applyWin} onClose={() => setTransferOpen(false)} />}
-      {historyOpen && <HistoryModal history={state.history} onClose={() => setHistoryOpen(false)} />}
+      {historyOpen && <HistoryModal history={state.history} matchHistory={state.matchHistory} onClose={() => setHistoryOpen(false)} />}
       {editingPlayerId && <PlayerNameModal
         player={state.players.find((player) => player.id === editingPlayerId)!}
         onClose={() => setEditingPlayerId(null)}
         onSave={(name) => { renamePlayer(editingPlayerId, name); setEditingPlayerId(null); }}
       />}
-      {resetOpen && <ConfirmDialog title="新しい対局を始めますか？" message="現在の対局を終了し、人数と名前を選ぶスタート画面へ戻ります。"
-        confirmLabel="スタート画面へ" onCancel={() => setResetOpen(false)} onConfirm={() => { returnToStart(); setResetOpen(false); }} />}
+      {resetOpen && <ConfirmDialog title="現在の対局を保存しますか？" message="最終順位と点数を対戦履歴へ保存し、人数と名前を選ぶスタート画面へ戻ります。"
+        confirmLabel="保存して終了" onCancel={() => setResetOpen(false)} onConfirm={() => { returnToStart(); setResetOpen(false); }} />}
     </main>
   );
 }

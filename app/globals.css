@@ -140,10 +140,22 @@ select { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #3154
   color: white; background: #b83d35; font-weight: 900; cursor: pointer; box-shadow: 0 3px 0 #6f211d;
 }
 .history-list { display: grid; gap: 9px; }
+.history-section-title { margin: 4px 0 10px; color: var(--gold); font-size: 14px; letter-spacing: .06em; }
+.history-section-title.current { margin-top: 24px; }
 .history-item { padding: 12px 14px; border-left: 3px solid var(--gold); border-radius: 8px; background: #102820; }
 .history-item p { margin: 0; font-weight: 700; }
 .history-item time { color: #88a096; font-size: 11px; }
 .empty { padding: 36px; color: #82968d; text-align: center; }
+.empty.compact { padding: 18px; }
+.match-list { display: grid; gap: 12px; }
+.match-item { padding: 14px; border: 1px solid rgba(220,192,113,.22); border-radius: 14px; background: #0d251d; }
+.match-item header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.match-item header strong { color: var(--gold); }
+.match-item header time, .match-item small { color: #849b90; font-size: 11px; }
+.match-results { display: grid; gap: 6px; }
+.match-results span { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 7px; font-size: 13px; }
+.match-results b { color: #a8bbb2; font-size: 11px; }
+.match-results em { color: white; font-style: normal; font-family: ui-monospace, monospace; font-weight: 900; }
 
 .start-screen {
   width: 100vw; min-height: 100dvh; overflow: auto; display: grid; place-items: center; padding: 24px;
@@ -180,6 +192,12 @@ select { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #3154
 }
 .start-button:disabled { opacity: .35; cursor: not-allowed; }
 .start-foot { margin: 14px 0 0; color: #71887d; font-size: 10px; }
+.start-history-summary {
+  margin-top: 16px; padding: 11px 14px; display: flex; align-items: center; gap: 10px;
+  border: 1px solid rgba(255,255,255,.1); border-radius: 11px; color: #a9bcb3; background: #0c251c; font-size: 11px;
+}
+.start-history-summary strong { color: var(--gold); }
+.start-history-summary span { margin-left: auto; color: white; font-weight: 900; }
 
 .mode-sanma .position-left { left: 5%; }
 .mode-sanma .position-right { right: 5%; }

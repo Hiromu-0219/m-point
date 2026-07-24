@@ -1,4 +1,4 @@
-import type { GameMode, GameSnapshot, GameState, Player, Wind } from "./types";
+import type { GameMode, GameSnapshot, GameState, MatchRecord, Player, Wind } from "./types";
 
 export const INITIAL_PLAYERS: Player[] = [
   { id: "east", name: "東家", wind: "東", score: 25000, isDealer: true, isRiichi: false },
@@ -21,6 +21,7 @@ export const createInitialState = (gameMode: GameMode = "yonma", names?: string[
   gameMode,
   hasStarted,
   history: [],
+  matchHistory: [],
 });
 
 export const snapshotOf = (state: GameState): GameSnapshot => ({
@@ -62,5 +63,17 @@ export function normalizeGameState(value: GameState): GameState {
     hasStarted: value.hasStarted ?? true,
     players: value.players.slice(0, gameMode === "sanma" ? 3 : 4),
     history: value.history ?? [],
+    matchHistory: value.matchHistory ?? [],
+  };
+}
+
+export function createMatchRecord(state: GameState, endedAt = Date.now()): MatchRecord {
+  return {
+    id: `${endedAt}-${Math.random().toString(36).slice(2)}`,
+    gameMode: state.gameMode,
+    endedAt,
+    finalRound: state.round,
+    players: getRanks(state.players).map(({ id, name, wind, score }) => ({ id, name, wind, score })),
+    eventCount: state.history.length,
   };
 }

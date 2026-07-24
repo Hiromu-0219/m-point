@@ -34,4 +34,16 @@ export type GameEvent = {
   snapshot: GameSnapshot;
 };
 
-export type GameState = GameSnapshot & { history: GameEvent[] };
+export type MatchRecord = {
+  id: string;
+  gameMode: GameMode;
+  endedAt: number;
+  finalRound: string;
+  players: Array<Pick<Player, "id" | "name" | "wind" | "score">>;
+  eventCount: number;
+};
+
+export type GameState = GameSnapshot & {
+  history: GameEvent[];
+  matchHistory: MatchRecord[];
+};
