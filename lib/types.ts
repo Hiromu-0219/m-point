@@ -25,7 +25,7 @@ export type GameSnapshot = {
 
 export type GameEvent = {
   id: string;
-  type: "ron" | "tsumo" | "riichi" | "manual" | "reset";
+  type: "ron" | "tsumo" | "draw" | "riichi" | "manual" | "reset";
   description: string;
   changes: ScoreChange[];
   kyotakuBefore: number;

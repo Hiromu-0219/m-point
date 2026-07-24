@@ -1,4 +1,4 @@
-import type { GameMode, GameSnapshot, GameState, MatchRecord, Player, Wind } from "./types";
+import type { GameMode, GameSnapshot, GameState, MatchRecord, Player, PlayerId, ScoreChange, Wind } from "./types";
 
 export const INITIAL_PLAYERS: Player[] = [
   { id: "east", name: "東家", wind: "東", score: 25000, isDealer: true, isRiichi: false },
@@ -76,4 +76,22 @@ export function createMatchRecord(state: GameState, endedAt = Date.now()): Match
     players: getRanks(state.players).map(({ id, name, wind, score }) => ({ id, name, wind, score })),
     eventCount: state.history.length,
   };
+}
+
+export function calculateDrawChanges(players: Player[], tenpaiIds: PlayerId[]): {
+  changes: ScoreChange[];
+  dealerContinues: boolean;
+} {
+  const tenpai = new Set(tenpaiIds);
+  const tenpaiPlayers = players.filter((player) => tenpai.has(player.id));
+  const notenPlayers = players.filter((player) => !tenpai.has(player.id));
+  const changes = players.map((player) => ({ playerId: player.id, amount: 0 }));
+  if (tenpaiPlayers.length > 0 && notenPlayers.length > 0) {
+    const gain = 3000 / tenpaiPlayers.length;
+    const loss = 3000 / notenPlayers.length;
+    tenpaiPlayers.forEach((player) => { changes.find((change) => change.playerId === player.id)!.amount = gain; });
+    notenPlayers.forEach((player) => { changes.find((change) => change.playerId === player.id)!.amount = -loss; });
+  }
+  const dealer = players.find((player) => player.isDealer);
+  return { changes, dealerContinues: !!dealer && tenpai.has(dealer.id) };
 }

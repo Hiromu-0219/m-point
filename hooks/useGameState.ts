@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { calculateScore } from "@/lib/scoreCalculator";
-import { advanceRound, createInitialState, createMatchRecord, normalizeGameState, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
+import { advanceRound, calculateDrawChanges, createInitialState, createMatchRecord, normalizeGameState, rotatePlayerWinds, snapshotOf } from "@/lib/gameState";
 import { loadGame, saveGame } from "@/lib/storage";
 import type { GameEvent, GameMode, GameState, PlayerId, WinType } from "@/lib/types";
 
@@ -101,6 +101,34 @@ export function useGameState() {
     });
   }, []);
 
+  const applyDraw = useCallback((tenpaiIds: PlayerId[]) => {
+    setState((current) => {
+      const tenpai = new Set(tenpaiIds);
+      const tenpaiPlayers = current.players.filter((player) => tenpai.has(player.id));
+      const { changes, dealerContinues } = calculateDrawChanges(current.players, tenpaiIds);
+      let players = current.players.map((player) => ({
+        ...player,
+        score: player.score + changes.find((change) => change.playerId === player.id)!.amount,
+        isRiichi: false,
+      }));
+      if (!dealerContinues) players = rotatePlayerWinds(players);
+      const nextRound = dealerContinues ? current.round : advanceRound(current.round, current.gameMode);
+      const nextHonba = current.honba + 1;
+      const tenpaiNames = tenpaiPlayers.map((player) => player.name).join("・") || "なし";
+      const event: GameEvent = {
+        id: eventId(),
+        type: "draw",
+        description: `流局／テンパイ：${tenpaiNames}／${dealerContinues ? "親連荘" : `${nextRound}へ`}／${nextHonba}本場`,
+        changes: changes.filter((change) => change.amount !== 0),
+        kyotakuBefore: current.kyotaku,
+        kyotakuAfter: current.kyotaku,
+        createdAt: Date.now(),
+        snapshot: snapshotOf(current),
+      };
+      return { ...current, players, honba: nextHonba, round: nextRound, history: [event, ...current.history] };
+    });
+  }, []);
+
   const undo = useCallback(() => setState((current) => {
     const [latest, ...history] = current.history;
     return latest ? normalizeGameState({ ...latest.snapshot, history, matchHistory: current.matchHistory }) : current;
@@ -121,5 +149,5 @@ export function useGameState() {
     } : current);
   }, []);
 
-  return { state, declareRiichi, applyWin, renamePlayer, undo, startGame, returnToStart, hydrated };
+  return { state, declareRiichi, applyWin, applyDraw, renamePlayer, undo, startGame, returnToStart, hydrated };
 }
